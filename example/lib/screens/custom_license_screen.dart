@@ -54,8 +54,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''',
         ),
-        // 더 많은 커스텀 라이센스 추가 가능
-        ...LicenseService.getCommonCustomLicenses(),
       ];
 
       final loadedLicenses = await LicenseService.loadFromLicenseRegistry(
