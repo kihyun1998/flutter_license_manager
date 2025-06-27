@@ -1,3 +1,9 @@
-## 0.0.1
+## 1.0.0
 
-* TODO: Describe initial release.
+### Added
+- Initial release
+- Load licenses from Flutter's LicenseRegistry
+- Support for custom licenses
+- License text formatting with proper indentation
+- License consolidation for duplicate packages
+- Example app with implementation examples
