@@ -6,11 +6,12 @@ flutter_license_manager/
 ├── example/
     ├── lib/
     │   ├── screens/
-    │   │   ├── custom_license_screen.dart
-    │   │   ├── home_screen.dart
-    │   │   └── license_screen.dart
+    │   │   └── home_screen.dart
+    │   ├── services/
+    │   │   └── license_manager.dart
     │   ├── widgets/
-    │   │   └── license_card.dart
+    │   │   ├── license_detail_view.dart
+    │   │   └── license_dialog.dart
     │   └── main.dart
     └── test/
     │   └── widget_test.dart
@@ -30,11 +31,15 @@ flutter_license_manager/
 ## example/lib/main.dart
 ```dart
 import 'package:example/screens/home_screen.dart';
+import 'package:example/services/license_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_license_manager/flutter_license_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 라이선스 매니저 인스턴스 가져오기
+  final licenseManager = LicenseManager();
 
   // 미리 라이센스들을 로드
   final basicLicenses = await LicenseService.loadFromLicenseRegistry();
@@ -103,21 +108,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     customLicenses: customLicenses,
   );
 
-  runApp(MyApp(
-    basicLicenses: basicLicenses,
-    allLicenses: allLicenses,
-  ));
+  // 싱글톤에 저장
+  licenseManager.basicLicenses = basicLicenses;
+  licenseManager.allLicenses = allLicenses;
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final List<OssLicenseInfo> basicLicenses;
-  final List<OssLicenseInfo> allLicenses;
-
-  const MyApp({
-    super.key,
-    required this.basicLicenses,
-    required this.allLicenses,
-  });
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -128,110 +127,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Segoe UI',
       ),
-      home: HomeScreen(
-        basicLicenses: basicLicenses,
-        allLicenses: allLicenses,
-      ),
-    );
-  }
-}
-
-```
-## example/lib/screens/custom_license_screen.dart
-```dart
-import 'package:flutter/material.dart';
-import 'package:flutter_license_manager/flutter_license_manager.dart';
-
-import '../widgets/license_card.dart';
-
-class CustomLicenseScreen extends StatelessWidget {
-  final List<OssLicenseInfo> licenses;
-
-  const CustomLicenseScreen({
-    super.key,
-    required this.licenses,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Licenses (with Custom)'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0.5,
-      ),
-      body: Column(
-        children: [
-          // 헤더 정보
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(16),
-            color: Colors.green.shade50,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.library_books,
-                      color: Colors.green.shade600,
-                      size: 20,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'LicenseRegistry + Custom Licenses',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Text(
-                  '${licenses.length} packages (Built-in + Custom licenses)',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // 라이선스 리스트
-          Expanded(
-            child: licenses.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.description_outlined,
-                          size: 64,
-                          color: Colors.grey.shade400,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'No licenses found',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: licenses.length,
-                    itemBuilder: (context, index) {
-                      return LicenseCard(license: licenses[index]);
-                    },
-                  ),
-          ),
-        ],
-      ),
+      home: HomeScreen(),
     );
   }
 }
@@ -239,23 +135,17 @@ class CustomLicenseScreen extends StatelessWidget {
 ```
 ## example/lib/screens/home_screen.dart
 ```dart
-import 'package:example/screens/custom_license_screen.dart';
-import 'package:example/screens/license_screen.dart';
+import 'package:example/services/license_manager.dart';
+import 'package:example/widgets/license_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_license_manager/flutter_license_manager.dart';
 
 class HomeScreen extends StatelessWidget {
-  final List<OssLicenseInfo> basicLicenses;
-  final List<OssLicenseInfo> allLicenses;
-
-  const HomeScreen({
-    super.key,
-    required this.basicLicenses,
-    required this.allLicenses,
-  });
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final licenseManager = LicenseManager();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('License Manager Example'),
@@ -298,16 +188,14 @@ class HomeScreen extends StatelessWidget {
               context,
               title: 'Basic LicenseRegistry',
               subtitle:
-                  'Flutter built-in license registry only (${basicLicenses.length} packages)',
+                  'Flutter built-in license registry only (${licenseManager.basicLicenses.length} packages)',
               icon: Icons.flutter_dash,
               color: Colors.blue,
               onTap: () {
-                Navigator.push(
+                LicenseDialog.show(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        LicenseScreen(licenses: basicLicenses),
-                  ),
+                  licenses: licenseManager.basicLicenses,
+                  title: 'Basic LicenseRegistry',
                 );
               },
             ),
@@ -316,16 +204,14 @@ class HomeScreen extends StatelessWidget {
               context,
               title: 'With Custom Licenses',
               subtitle:
-                  'LicenseRegistry + Custom licenses (${allLicenses.length} packages)',
+                  'LicenseRegistry + Custom licenses (${licenseManager.allLicenses.length} packages)',
               icon: Icons.library_books,
               color: Colors.green,
               onTap: () {
-                Navigator.push(
+                LicenseDialog.show(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        CustomLicenseScreen(licenses: allLicenses),
-                  ),
+                  licenses: licenseManager.allLicenses,
+                  title: 'With Custom Licenses',
                 );
               },
             ),
@@ -405,174 +291,80 @@ class HomeScreen extends StatelessWidget {
 }
 
 ```
-## example/lib/screens/license_screen.dart
+## example/lib/services/license_manager.dart
 ```dart
-import 'package:flutter/material.dart';
 import 'package:flutter_license_manager/flutter_license_manager.dart';
 
-import '../widgets/license_card.dart';
+class LicenseManager {
+  static final LicenseManager _instance = LicenseManager._internal();
 
-class LicenseScreen extends StatelessWidget {
-  final List<OssLicenseInfo> licenses;
+  factory LicenseManager() {
+    return _instance;
+  }
 
-  const LicenseScreen({
-    super.key,
-    required this.licenses,
-  });
+  LicenseManager._internal();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Licenses (LicenseRegistry)'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0.5,
-      ),
-      body: Column(
-        children: [
-          // 헤더 정보
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(16),
-            color: Colors.blue.shade50,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.flutter_dash,
-                      color: Colors.blue.shade600,
-                      size: 20,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'LicenseRegistry Method',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Text(
-                  '${licenses.length} packages (Built-in Flutter registry)',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // 라이선스 리스트
-          Expanded(
-            child: licenses.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.description_outlined,
-                          size: 64,
-                          color: Colors.grey.shade400,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'No licenses found',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: licenses.length,
-                    itemBuilder: (context, index) {
-                      return LicenseCard(license: licenses[index]);
-                    },
-                  ),
-          ),
-        ],
-      ),
-    );
+  List<OssLicenseInfo>? _basicLicenses;
+  List<OssLicenseInfo>? _allLicenses;
+
+  // Basic licenses getter/setter
+  List<OssLicenseInfo> get basicLicenses => _basicLicenses ?? [];
+  set basicLicenses(List<OssLicenseInfo> licenses) => _basicLicenses = licenses;
+
+  // All licenses getter/setter
+  List<OssLicenseInfo> get allLicenses => _allLicenses ?? [];
+  set allLicenses(List<OssLicenseInfo> licenses) => _allLicenses = licenses;
+
+  // 초기화 여부 확인
+  bool get isInitialized => _basicLicenses != null && _allLicenses != null;
+
+  // 클리어 메서드 (필요시)
+  void clear() {
+    _basicLicenses = null;
+    _allLicenses = null;
   }
 }
 
 ```
-## example/lib/widgets/license_card.dart
+## example/lib/widgets/license_detail_view.dart
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_license_manager/flutter_license_manager.dart';
 
-class LicenseCard extends StatefulWidget {
+class LicenseDetailView extends StatelessWidget {
   final OssLicenseInfo license;
+  final VoidCallback onBack;
 
-  const LicenseCard({
+  const LicenseDetailView({
     super.key,
     required this.license,
+    required this.onBack,
   });
 
   @override
-  State<LicenseCard> createState() => _LicenseCardState();
-}
-
-class _LicenseCardState extends State<LicenseCard> {
-  bool _isExpanded = false;
-
-  @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(
-          color: Colors.grey.shade300,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          _buildHeader(),
-          if (_isExpanded) _buildExpandedContent(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _isExpanded = !_isExpanded;
-        });
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(16),
-        child: Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 헤더
+        Row(
           children: [
+            IconButton(
+              onPressed: onBack,
+              icon: Icon(Icons.arrow_back),
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.license.packageName,
+                    license.packageName,
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 4),
                   Text(
                     _getLicenseCountText(),
                     style: TextStyle(
@@ -583,71 +375,173 @@ class _LicenseCardState extends State<LicenseCard> {
                 ],
               ),
             ),
-            Icon(
-              _isExpanded ? Icons.expand_less : Icons.expand_more,
-              color: Colors.grey.shade600,
-              size: 24,
+            IconButton(
+              onPressed: _copyLicenseText,
+              icon: Icon(Icons.copy),
+              tooltip: 'Copy license text',
             ),
           ],
         ),
-      ),
+        Divider(),
+        // 라이센스 텍스트들
+        Expanded(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _buildLicenseTexts(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildExpandedContent() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Container(
-        constraints: BoxConstraints(maxHeight: 400),
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
+  List<Widget> _buildLicenseTexts() {
+    final widgets = <Widget>[];
+
+    for (int i = 0; i < license.licenseTexts.length; i++) {
+      // 라이센스 텍스트 추가
+      widgets.add(
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: SelectableText(
+            license.licenseTexts[i],
+            style: TextStyle(
+              fontSize: 12,
+              fontFamily: 'monospace',
+              height: 1.4,
+              color: Colors.grey.shade800,
+            ),
+          ),
         ),
+      );
+
+      // 마지막이 아니면 Divider 추가
+      if (i < license.licenseTexts.length - 1) {
+        widgets.add(SizedBox(height: 16));
+        widgets.add(
+          Divider(
+            color: Colors.grey.shade400,
+            thickness: 1,
+          ),
+        );
+        widgets.add(SizedBox(height: 16));
+      }
+    }
+
+    return widgets;
+  }
+
+  String _getLicenseCountText() {
+    if (license.licenseCount == 1) {
+      return '1 license';
+    } else {
+      return '${license.licenseCount} licenses';
+    }
+  }
+
+  void _copyLicenseText() {
+    final textToCopy =
+        'Package: ${license.packageName}\n\n${license.licenseTexts.join('\n\n')}';
+    Clipboard.setData(ClipboardData(text: textToCopy));
+  }
+}
+
+```
+## example/lib/widgets/license_dialog.dart
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_license_manager/flutter_license_manager.dart';
+
+import 'license_detail_view.dart';
+
+class LicenseDialog extends StatefulWidget {
+  final List<OssLicenseInfo> licenses;
+  final String title;
+
+  const LicenseDialog({
+    super.key,
+    required this.licenses,
+    required this.title,
+  });
+
+  @override
+  State<LicenseDialog> createState() => _LicenseDialogState();
+
+  static void show(
+    BuildContext context, {
+    required List<OssLicenseInfo> licenses,
+    required String title,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => LicenseDialog(
+        licenses: licenses,
+        title: title,
+      ),
+    );
+  }
+}
+
+class _LicenseDialogState extends State<LicenseDialog> {
+  OssLicenseInfo? selectedLicense;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.8,
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'License Text',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
+            // 다이얼로그 헤더
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade300),
                 ),
-                IconButton(
-                  onPressed: _copyLicenseText,
-                  icon: Icon(
-                    Icons.copy,
-                    size: 16,
-                    color: Colors.grey.shade600,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      selectedLicense != null ? 'License Detail' : widget.title,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  tooltip: 'Copy license text',
-                  padding: EdgeInsets.all(4),
-                  constraints: BoxConstraints(
-                    minWidth: 24,
-                    minHeight: 24,
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(Icons.close),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            Divider(height: 16, color: Colors.grey.shade400),
+            // 컨텐츠
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(8),
-                child: SelectableText(
-                  widget.license.licenseText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'monospace',
-                    height: 1.4,
-                    color: Colors.grey.shade800,
-                  ),
-                ),
+              child: AnimatedSwitcher(
+                duration: Duration(milliseconds: 300),
+                child: selectedLicense != null
+                    ? LicenseDetailView(
+                        key: ValueKey('detail_${selectedLicense!.packageName}'),
+                        license: selectedLicense!,
+                        onBack: () {
+                          setState(() {
+                            selectedLicense = null;
+                          });
+                        },
+                      )
+                    : _buildLicenseList(),
               ),
             ),
           ],
@@ -656,25 +550,71 @@ class _LicenseCardState extends State<LicenseCard> {
     );
   }
 
-  String _getLicenseCountText() {
-    if (widget.license.licenseCount == 1) {
-      return '1 license';
-    } else {
-      return '${widget.license.licenseCount} licenses';
-    }
-  }
-
-  void _copyLicenseText() {
-    final textToCopy =
-        'Package: ${widget.license.packageName}\n\n${widget.license.licenseText}';
-
-    Clipboard.setData(ClipboardData(text: textToCopy));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('License text copied to clipboard'),
-        duration: Duration(seconds: 2),
-      ),
+  Widget _buildLicenseList() {
+    return Column(
+      key: ValueKey('list'),
+      children: [
+        // 헤더 정보
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16),
+          color: Colors.blue.shade50,
+          child: Text(
+            '${widget.licenses.length} packages',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
+        // 라이선스 리스트
+        Expanded(
+          child: widget.licenses.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.description_outlined,
+                        size: 64,
+                        color: Colors.grey.shade400,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'No licenses found',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: widget.licenses.length,
+                  itemBuilder: (context, index) {
+                    final license = widget.licenses[index];
+                    return ListTile(
+                      title: Text(
+                        license.packageName,
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        license.licenseCount == 1
+                            ? '1 license'
+                            : '${license.licenseCount} licenses',
+                      ),
+                      trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        setState(() {
+                          selectedLicense = license;
+                        });
+                      },
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
@@ -682,35 +622,7 @@ class _LicenseCardState extends State<LicenseCard> {
 ```
 ## example/test/widget_test.dart
 ```dart
-import 'package:example/main.dart';
-import 'package:flutter_license_manager/flutter_license_manager.dart';
-import 'package:flutter_test/flutter_test.dart';
-
-void main() {
-  testWidgets('License Manager Example app test', (WidgetTester tester) async {
-    // Mock license data for testing
-    final mockLicenses = [
-      OssLicenseInfo(
-        packageName: 'test_package',
-        licenseText: 'Test license text',
-        licenseCount: 1,
-      ),
-    ];
-
-    // Build our app and trigger a frame with mock data
-    await tester.pumpWidget(MyApp(
-      basicLicenses: mockLicenses,
-      allLicenses: mockLicenses,
-    ));
-
-    // Verify that the home screen title is displayed
-    expect(find.text('Choose License View Method'), findsOneWidget);
-
-    // Verify that both buttons are present
-    expect(find.text('Basic LicenseRegistry'), findsOneWidget);
-    expect(find.text('With Custom Licenses'), findsOneWidget);
-  });
-}
+void main() {}
 
 ```
 ## lib/flutter_license_manager.dart
@@ -763,14 +675,14 @@ export 'src/utils/license_parser.dart';
 ```dart
 class OssLicenseInfo {
   final String packageName;
-  final String licenseText;
+  final List<String> licenseTexts;
   final int licenseCount;
 
   OssLicenseInfo({
     required this.packageName,
-    required this.licenseText,
-    this.licenseCount = 1,
-  });
+    required this.licenseTexts,
+    int? licenseCount,
+  }) : licenseCount = licenseCount ?? licenseTexts.length;
 
   /// 패키지명을 리스트로 반환 (여러 패키지가 있는 경우)
   List<String> get packageNames {
@@ -785,6 +697,11 @@ class OssLicenseInfo {
   /// 패키지 개수
   int get packageCount {
     return packageNames.length;
+  }
+
+  /// 여러 라이센스가 있는지 확인
+  bool get hasMultipleLicenses {
+    return licenseTexts.length > 1;
   }
 
   @override
@@ -827,8 +744,7 @@ class LicenseService {
           if (packageName.trim().isNotEmpty) {
             licenses.add(OssLicenseInfo(
               packageName: packageName.trim(),
-              licenseText: licenseText,
-              licenseCount: 1,
+              licenseTexts: [licenseText], // 리스트로 변경
             ));
           }
         }
@@ -852,29 +768,10 @@ class LicenseService {
     required String packageName,
     required String licenseText,
   }) {
-    final formattedText = _formatCustomLicenseText(
-      packageName: packageName,
-      licenseText: licenseText,
-    );
-
     return OssLicenseInfo(
       packageName: packageName,
-      licenseText: formattedText,
-      licenseCount: 1,
+      licenseTexts: [licenseText], // 리스트로 변경
     );
-  }
-
-  /// 커스텀 라이선스 텍스트 포맷팅
-  static String _formatCustomLicenseText({
-    required String packageName,
-    required String licenseText,
-  }) {
-    final buffer = StringBuffer();
-
-    // 실제 라이선스 텍스트
-    buffer.write(licenseText);
-
-    return buffer.toString();
   }
 
   /// 같은 패키지명을 가진 라이선스들을 통합
@@ -916,38 +813,16 @@ class LicenseService {
     // 원본 패키지명 사용 (첫 번째 것)
     final packageName = licenses.first.packageName;
 
-    // 라이선스 개수 계산
-    final totalCount = licenses.length;
-
-    // 모든 라이선스 텍스트를 divider로 구분해서 연결 (원문 그대로)
-    final mergedText = _combineAllLicenseTexts(licenses);
+    // 모든 라이센스 텍스트를 리스트로 합치기
+    final allLicenseTexts = <String>[];
+    for (final license in licenses) {
+      allLicenseTexts.addAll(license.licenseTexts);
+    }
 
     return OssLicenseInfo(
       packageName: packageName,
-      licenseText: mergedText,
-      licenseCount: totalCount,
+      licenseTexts: allLicenseTexts,
     );
-  }
-
-  /// 모든 라이선스 텍스트를 divider로 구분해서 하나로 합치기 (원문 그대로 유지)
-  static String _combineAllLicenseTexts(List<OssLicenseInfo> licenses) {
-    final buffer = StringBuffer();
-
-    for (int i = 0; i < licenses.length; i++) {
-      final licenseText = licenses[i].licenseText;
-
-      // 라이선스 텍스트를 원문 그대로 추가
-      buffer.write(licenseText);
-
-      // 마지막 라이선스가 아닌 경우 divider 추가
-      if (i < licenses.length - 1) {
-        buffer.writeln('\n');
-        buffer.writeln('─' * 50); // divider
-        buffer.writeln();
-      }
-    }
-
-    return buffer.toString();
   }
 }
 
