@@ -1,22 +1,22 @@
 # Flutter License Manager
 
-A comprehensive Flutter package for managing and displaying OSS (Open Source Software) license information with support for custom licenses.
+A comprehensive Flutter package for managing and displaying OSS (Open Source Software) license information with support for custom licenses and improved UI components.
 
-## Features
+## 🌟 Features
 
 - 📄 **Load licenses from Flutter's LicenseRegistry**: Automatically collect all licenses from Flutter dependencies
 - 🔧 **Add custom licenses**: Include licenses for external libraries, DLLs, or other dependencies not covered by Flutter's registry
-- 📝 **Proper license formatting**: Maintains original indentation and formatting from license texts
+- 📝 **Multiple license support**: Handle packages with multiple license texts as separate strings
 - 🔍 **License consolidation**: Automatically merges multiple licenses from the same package
-- ⚡ **Lightweight**: Minimal dependencies and efficient performance
+- ⚡ **Lightweight**: Minimal dependencies and efficient data handling
 
-## Getting started
+## 🚀 Getting started
 
 Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_license_manager: ^1.0.0
+  flutter_license_manager: ^2.0.0
 ```
 
 Then run:
@@ -25,7 +25,7 @@ Then run:
 flutter pub get
 ```
 
-## Usage
+## 📖 Usage
 
 ### Basic Usage - Load from LicenseRegistry
 
@@ -44,8 +44,8 @@ ListView.builder(
       title: Text(license.packageName),
       subtitle: Text('${license.licenseCount} license(s)'),
       onTap: () {
-        // Show license text in your preferred way
-        // See example/ directory for implementation ideas
+        // Show license details - see example app for implementation
+        _showLicenseDetails(license);
       },
     );
   },
@@ -81,11 +81,21 @@ final allLicenses = await LicenseService.loadFromLicenseRegistry(
 );
 ```
 
+### Working with Multiple License Texts
 
+```dart
+// Check if a package has multiple licenses
+if (license.hasMultipleLicenses) {
+  print('${license.packageName} has ${license.licenseCount} licenses');
+  
+  // Access individual license texts
+  for (int i = 0; i < license.licenseTexts.length; i++) {
+    print('License ${i + 1}: ${license.licenseTexts[i]}');
+  }
+}
+```
 
-
-
-## API Reference
+## 📚 API Reference
 
 ### Classes
 
@@ -95,10 +105,11 @@ Represents license information for a package.
 
 **Properties:**
 - `String packageName`: Name of the package
-- `String licenseText`: Full license text
-- `int licenseCount`: Number of licenses (default: 1)
+- `List<String> licenseTexts`: List of license texts (NEW in v2.0.0)
+- `int licenseCount`: Number of licenses (automatically calculated)
 - `List<String> packageNames`: List of package names (for multi-package licenses)
 - `bool isMultiplePackages`: Whether this contains multiple packages
+- `bool hasMultipleLicenses`: Whether this package has multiple license texts
 - `int packageCount`: Number of packages
 
 #### `LicenseService`
@@ -124,18 +135,47 @@ Creates a custom license object.
 
 **Returns:** `OssLicenseInfo`
 
+## 🔄 Migration from v1.x to v2.x
 
+### Breaking Changes
 
+The main breaking change is in the `OssLicenseInfo` class:
 
+**v1.x:**
+```dart
+class OssLicenseInfo {
+  final String licenseText; // Single text
+  // ...
+}
 
-## Example
+// Usage
+print(license.licenseText);
+```
 
-Check out the [example](./example) directory for a complete implementation showing:
+**v2.x:**
+```dart
+class OssLicenseInfo {
+  final List<String> licenseTexts; // List of texts
+  // ...
+}
 
-- Basic license display using LicenseRegistry
+// Usage
+for (final text in license.licenseTexts) {
+  print(text);
+}
+
+// Or join them if you need a single string
+final combinedText = license.licenseTexts.join('\n\n');
+```
+
+## 📱 Example
+
+The [example](./example) directory contains a complete implementation showing:
+
+- Dialog-based license viewing with smooth transitions
+- Multiple license text display with proper separators
 - Custom license integration
-- Example UI components for displaying licenses
-- Different display methods
+- Desktop-friendly UI design
 
 To run the example:
 
@@ -144,15 +184,24 @@ cd example
 flutter run
 ```
 
-## Contributing
+## 🎥 Demo
+
+The example app demonstrates:
+
+1. **Home Screen**: Choose between basic Flutter licenses or licenses with custom additions
+2. **License Dialog**: View all licenses in a searchable dialog
+3. **Detail View**: Smooth transition to individual license details with copy functionality
+4. **Multiple Licenses**: Proper separation between multiple license texts using Flutter `Divider` widgets
+
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
- 
+## 📄 License
+
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 💖 Support
 
 If you find this package helpful, please give it a ⭐ on [GitHub](https://github.com/kihyun1998/flutter_license_manager)!
 
