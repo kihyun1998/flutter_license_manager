@@ -1,13 +1,13 @@
 class OssLicenseInfo {
   final String packageName;
-  final String licenseText;
+  final List<String> licenseTexts;
   final int licenseCount;
 
   OssLicenseInfo({
     required this.packageName,
-    required this.licenseText,
-    this.licenseCount = 1,
-  });
+    required this.licenseTexts,
+    int? licenseCount,
+  }) : licenseCount = licenseCount ?? licenseTexts.length;
 
   /// 패키지명을 리스트로 반환 (여러 패키지가 있는 경우)
   List<String> get packageNames {
@@ -22,6 +22,11 @@ class OssLicenseInfo {
   /// 패키지 개수
   int get packageCount {
     return packageNames.length;
+  }
+
+  /// 여러 라이센스가 있는지 확인
+  bool get hasMultipleLicenses {
+    return licenseTexts.length > 1;
   }
 
   @override

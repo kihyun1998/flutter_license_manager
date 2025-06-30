@@ -29,8 +29,7 @@ class LicenseService {
           if (packageName.trim().isNotEmpty) {
             licenses.add(OssLicenseInfo(
               packageName: packageName.trim(),
-              licenseText: licenseText,
-              licenseCount: 1,
+              licenseTexts: [licenseText], // 리스트로 변경
             ));
           }
         }
@@ -54,29 +53,10 @@ class LicenseService {
     required String packageName,
     required String licenseText,
   }) {
-    final formattedText = _formatCustomLicenseText(
-      packageName: packageName,
-      licenseText: licenseText,
-    );
-
     return OssLicenseInfo(
       packageName: packageName,
-      licenseText: formattedText,
-      licenseCount: 1,
+      licenseTexts: [licenseText], // 리스트로 변경
     );
-  }
-
-  /// 커스텀 라이선스 텍스트 포맷팅
-  static String _formatCustomLicenseText({
-    required String packageName,
-    required String licenseText,
-  }) {
-    final buffer = StringBuffer();
-
-    // 실제 라이선스 텍스트
-    buffer.write(licenseText);
-
-    return buffer.toString();
   }
 
   /// 같은 패키지명을 가진 라이선스들을 통합
@@ -118,37 +98,15 @@ class LicenseService {
     // 원본 패키지명 사용 (첫 번째 것)
     final packageName = licenses.first.packageName;
 
-    // 라이선스 개수 계산
-    final totalCount = licenses.length;
-
-    // 모든 라이선스 텍스트를 divider로 구분해서 연결 (원문 그대로)
-    final mergedText = _combineAllLicenseTexts(licenses);
+    // 모든 라이센스 텍스트를 리스트로 합치기
+    final allLicenseTexts = <String>[];
+    for (final license in licenses) {
+      allLicenseTexts.addAll(license.licenseTexts);
+    }
 
     return OssLicenseInfo(
       packageName: packageName,
-      licenseText: mergedText,
-      licenseCount: totalCount,
+      licenseTexts: allLicenseTexts,
     );
-  }
-
-  /// 모든 라이선스 텍스트를 divider로 구분해서 하나로 합치기 (원문 그대로 유지)
-  static String _combineAllLicenseTexts(List<OssLicenseInfo> licenses) {
-    final buffer = StringBuffer();
-
-    for (int i = 0; i < licenses.length; i++) {
-      final licenseText = licenses[i].licenseText;
-
-      // 라이선스 텍스트를 원문 그대로 추가
-      buffer.write(licenseText);
-
-      // 마지막 라이선스가 아닌 경우 divider 추가
-      if (i < licenses.length - 1) {
-        buffer.writeln('\n');
-        buffer.writeln('─' * 50); // divider
-        buffer.writeln();
-      }
-    }
-
-    return buffer.toString();
   }
 }

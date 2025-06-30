@@ -130,14 +130,9 @@ class _LicenseCardState extends State<LicenseCard> {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(8),
-                child: SelectableText(
-                  widget.license.licenseText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'monospace',
-                    height: 1.4,
-                    color: Colors.grey.shade800,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _buildLicenseTexts(),
                 ),
               ),
             ),
@@ -145,6 +140,39 @@ class _LicenseCardState extends State<LicenseCard> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildLicenseTexts() {
+    final widgets = <Widget>[];
+
+    for (int i = 0; i < widget.license.licenseTexts.length; i++) {
+      // 라이센스 텍스트 추가
+      widgets.add(
+        SelectableText(
+          widget.license.licenseTexts[i],
+          style: TextStyle(
+            fontSize: 12,
+            fontFamily: 'monospace',
+            height: 1.4,
+            color: Colors.grey.shade800,
+          ),
+        ),
+      );
+
+      // 마지막이 아니면 Divider 추가
+      if (i < widget.license.licenseTexts.length - 1) {
+        widgets.add(SizedBox(height: 16));
+        widgets.add(
+          Divider(
+            color: Colors.grey.shade400,
+            thickness: 1,
+          ),
+        );
+        widgets.add(SizedBox(height: 16));
+      }
+    }
+
+    return widgets;
   }
 
   String _getLicenseCountText() {
@@ -157,7 +185,7 @@ class _LicenseCardState extends State<LicenseCard> {
 
   void _copyLicenseText() {
     final textToCopy =
-        'Package: ${widget.license.packageName}\n\n${widget.license.licenseText}';
+        'Package: ${widget.license.packageName}\n\n${widget.license.licenseTexts.join('\n\n')}';
 
     Clipboard.setData(ClipboardData(text: textToCopy));
 
