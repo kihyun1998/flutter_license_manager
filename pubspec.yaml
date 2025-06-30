@@ -1,6 +1,6 @@
 name: flutter_license_manager
 description: A comprehensive Flutter package for managing and displaying OSS license information with support for custom licenses and improved UI components.
-version: 2.0.0
+version: 2.0.1
 homepage: https://github.com/kihyun1998/flutter_license_manager
 repository: https://github.com/kihyun1998/flutter_license_manager
 issue_tracker: https://github.com/kihyun1998/flutter_license_manager/issues

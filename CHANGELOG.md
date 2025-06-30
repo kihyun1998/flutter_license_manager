@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.1
+
+### Fixed
+- Fixed license text display issue where Carriage Return (`\r`) characters were not properly handled
+- License text now correctly converts `\r\n` to `\n` and standalone `\r` to `\n`
+- Resolved problem where license text appeared as one long line instead of properly formatted paragraphs
+
 ## 2.0.0
 
 ### BREAKING CHANGES

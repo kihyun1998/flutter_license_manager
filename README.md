@@ -8,6 +8,7 @@ A comprehensive Flutter package for managing and displaying OSS (Open Source Sof
 - 🔧 **Add custom licenses**: Include licenses for external libraries, DLLs, or other dependencies not covered by Flutter's registry
 - 📝 **Multiple license support**: Handle packages with multiple license texts as separate strings
 - 🔍 **License consolidation**: Automatically merges multiple licenses from the same package
+- 🛠️ **Text normalization**: Properly handles different line ending formats (`\r\n`, `\r`, `\n`)
 - ⚡ **Lightweight**: Minimal dependencies and efficient data handling
 
 ## 🚀 Getting started
@@ -16,7 +17,7 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_license_manager: ^2.0.0
+  flutter_license_manager: ^2.0.1
 ```
 
 Then run:
@@ -192,6 +193,12 @@ The example app demonstrates:
 2. **License Dialog**: View all licenses in a searchable dialog
 3. **Detail View**: Smooth transition to individual license details with copy functionality
 4. **Multiple Licenses**: Proper separation between multiple license texts using Flutter `Divider` widgets
+
+## 🐛 Bug Fixes
+
+### v2.0.1
+- Fixed license text formatting issues where Carriage Return (`\r`) characters caused improper text display
+- License texts now properly handle different line ending formats from various sources
 
 ## 🤝 Contributing
 
