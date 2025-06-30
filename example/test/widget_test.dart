@@ -14,10 +14,7 @@ void main() {
     ];
 
     // Build our app and trigger a frame with mock data
-    await tester.pumpWidget(MyApp(
-      basicLicenses: mockLicenses,
-      allLicenses: mockLicenses,
-    ));
+    await tester.pumpWidget(MyApp());
 
     // Verify that the home screen title is displayed
     expect(find.text('Choose License View Method'), findsOneWidget);

@@ -1,18 +1,16 @@
+import 'package:example/services/license_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_license_manager/flutter_license_manager.dart';
 
 import '../widgets/license_card.dart';
 
 class LicenseScreen extends StatelessWidget {
-  final List<OssLicenseInfo> licenses;
-
-  const LicenseScreen({
-    super.key,
-    required this.licenses,
-  });
+  const LicenseScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final licenseManager = LicenseManager();
+    final licenses = licenseManager.basicLicenses;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Licenses (LicenseRegistry)'),

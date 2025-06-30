@@ -1,9 +1,13 @@
 import 'package:example/screens/home_screen.dart';
+import 'package:example/services/license_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_license_manager/flutter_license_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 라이선스 매니저 인스턴스 가져오기
+  final licenseManager = LicenseManager();
 
   // 미리 라이센스들을 로드
   final basicLicenses = await LicenseService.loadFromLicenseRegistry();
@@ -72,21 +76,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
     customLicenses: customLicenses,
   );
 
-  runApp(MyApp(
-    basicLicenses: basicLicenses,
-    allLicenses: allLicenses,
-  ));
+  // 싱글톤에 저장
+  licenseManager.basicLicenses = basicLicenses;
+  licenseManager.allLicenses = allLicenses;
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final List<OssLicenseInfo> basicLicenses;
-  final List<OssLicenseInfo> allLicenses;
-
-  const MyApp({
-    super.key,
-    required this.basicLicenses,
-    required this.allLicenses,
-  });
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +95,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Segoe UI',
       ),
-      home: HomeScreen(
-        basicLicenses: basicLicenses,
-        allLicenses: allLicenses,
-      ),
+      home: HomeScreen(),
     );
   }
 }

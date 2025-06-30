@@ -7,6 +7,7 @@ flutter_license_manager/
     ├── lib/
     │   ├── screens/
     │   │   ├── custom_license_screen.dart
+    │   │   ├── home_screen.dart
     │   │   └── license_screen.dart
     │   ├── widgets/
     │   │   └── license_card.dart
@@ -28,17 +29,95 @@ flutter_license_manager/
 
 ## example/lib/main.dart
 ```dart
+import 'package:example/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_license_manager/flutter_license_manager.dart';
 
-import 'screens/custom_license_screen.dart';
-import 'screens/license_screen.dart';
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
-  runApp(MyApp());
+  // 미리 라이센스들을 로드
+  final basicLicenses = await LicenseService.loadFromLicenseRegistry();
+
+  // 커스텀 라이센스 예시
+  final customLicenses = [
+    LicenseService.createCustomLicense(
+      packageName: 'Your Golang DLL',
+      licenseText: '''MIT License
+
+Copyright (c) 2024 Your Company
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.''',
+    ),
+    LicenseService.createCustomLicense(
+      packageName: 'External C++ Library',
+      licenseText: '''BSD 3-Clause License
+
+Copyright (c) 2024, Example Company
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
+    ),
+  ];
+
+  final allLicenses = await LicenseService.loadFromLicenseRegistry(
+    customLicenses: customLicenses,
+  );
+
+  runApp(MyApp(
+    basicLicenses: basicLicenses,
+    allLicenses: allLicenses,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final List<OssLicenseInfo> basicLicenses;
+  final List<OssLicenseInfo> allLicenses;
+
+  const MyApp({
+    super.key,
+    required this.basicLicenses,
+    required this.allLicenses,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,13 +128,131 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Segoe UI',
       ),
-      home: HomeScreen(),
+      home: HomeScreen(
+        basicLicenses: basicLicenses,
+        allLicenses: allLicenses,
+      ),
     );
   }
 }
 
+```
+## example/lib/screens/custom_license_screen.dart
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_license_manager/flutter_license_manager.dart';
+
+import '../widgets/license_card.dart';
+
+class CustomLicenseScreen extends StatelessWidget {
+  final List<OssLicenseInfo> licenses;
+
+  const CustomLicenseScreen({
+    super.key,
+    required this.licenses,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Licenses (with Custom)'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0.5,
+      ),
+      body: Column(
+        children: [
+          // 헤더 정보
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16),
+            color: Colors.green.shade50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.library_books,
+                      color: Colors.green.shade600,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'LicenseRegistry + Custom Licenses',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '${licenses.length} packages (Built-in + Custom licenses)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 라이선스 리스트
+          Expanded(
+            child: licenses.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'No licenses found',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: licenses.length,
+                    itemBuilder: (context, index) {
+                      return LicenseCard(license: licenses[index]);
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+```
+## example/lib/screens/home_screen.dart
+```dart
+import 'package:example/screens/custom_license_screen.dart';
+import 'package:example/screens/license_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_license_manager/flutter_license_manager.dart';
+
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final List<OssLicenseInfo> basicLicenses;
+  final List<OssLicenseInfo> allLicenses;
+
+  const HomeScreen({
+    super.key,
+    required this.basicLicenses,
+    required this.allLicenses,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,14 +297,16 @@ class HomeScreen extends StatelessWidget {
             _buildMethodButton(
               context,
               title: 'Basic LicenseRegistry',
-              subtitle: 'Flutter built-in license registry only',
+              subtitle:
+                  'Flutter built-in license registry only (${basicLicenses.length} packages)',
               icon: Icons.flutter_dash,
               color: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => LicenseScreen(),
+                    builder: (context) =>
+                        LicenseScreen(licenses: basicLicenses),
                   ),
                 );
               },
@@ -116,14 +315,16 @@ class HomeScreen extends StatelessWidget {
             _buildMethodButton(
               context,
               title: 'With Custom Licenses',
-              subtitle: 'LicenseRegistry + Custom licenses (DLLs, etc.)',
+              subtitle:
+                  'LicenseRegistry + Custom licenses (${allLicenses.length} packages)',
               icon: Icons.library_books,
               color: Colors.green,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CustomLicenseScreen(),
+                    builder: (context) =>
+                        CustomLicenseScreen(licenses: allLicenses),
                   ),
                 );
               },
@@ -204,235 +405,6 @@ class HomeScreen extends StatelessWidget {
 }
 
 ```
-## example/lib/screens/custom_license_screen.dart
-```dart
-import 'package:flutter/material.dart';
-import 'package:flutter_license_manager/flutter_license_manager.dart';
-
-import '../widgets/license_card.dart';
-
-class CustomLicenseScreen extends StatefulWidget {
-  const CustomLicenseScreen({super.key});
-
-  @override
-  _CustomLicenseScreenState createState() => _CustomLicenseScreenState();
-}
-
-class _CustomLicenseScreenState extends State<CustomLicenseScreen> {
-  List<OssLicenseInfo> licenses = [];
-  bool isLoading = true;
-  String? errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLicenses();
-  }
-
-  Future<void> _loadLicenses() async {
-    try {
-      setState(() {
-        isLoading = true;
-        errorMessage = null;
-      });
-
-      // 커스텀 라이센스 예시 (golang dll 등)
-      final customLicenses = [
-        LicenseService.createCustomLicense(
-          packageName: 'Your Golang DLL',
-          licenseText: '''MIT License
-
-Copyright (c) 2024 Your Company
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.''',
-        ),
-        // 더 많은 커스텀 라이센스 추가 가능
-        ...LicenseService.getCommonCustomLicenses(),
-      ];
-
-      final loadedLicenses = await LicenseService.loadFromLicenseRegistry(
-        customLicenses: customLicenses,
-      );
-
-      setState(() {
-        licenses = loadedLicenses;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        errorMessage = e.toString();
-        isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Licenses (with Custom)'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0.5,
-      ),
-      body: _buildBody(),
-    );
-  }
-
-  Widget _buildBody() {
-    if (isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: Colors.green),
-            SizedBox(height: 16),
-            Text(
-              'Loading licenses...',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red.shade400,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Error loading licenses',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.red.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 8),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadLicenses,
-              child: Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (licenses.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.description_outlined,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'No licenses found',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      children: [
-        // 헤더 정보
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(16),
-          color: Colors.green.shade50,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.library_books,
-                    color: Colors.green.shade600,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'LicenseRegistry + Custom Licenses',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Text(
-                '${licenses.length} packages (Built-in + Custom licenses)',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // 라이선스 리스트
-        Expanded(
-          child: ListView.builder(
-            itemCount: licenses.length,
-            itemBuilder: (context, index) {
-              return LicenseCard(license: licenses[index]);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-```
 ## example/lib/screens/license_screen.dart
 ```dart
 import 'package:flutter/material.dart';
@@ -440,44 +412,13 @@ import 'package:flutter_license_manager/flutter_license_manager.dart';
 
 import '../widgets/license_card.dart';
 
-class LicenseScreen extends StatefulWidget {
-  const LicenseScreen({super.key});
+class LicenseScreen extends StatelessWidget {
+  final List<OssLicenseInfo> licenses;
 
-  @override
-  _LicenseScreenState createState() => _LicenseScreenState();
-}
-
-class _LicenseScreenState extends State<LicenseScreen> {
-  List<OssLicenseInfo> licenses = [];
-  bool isLoading = true;
-  String? errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLicenses();
-  }
-
-  Future<void> _loadLicenses() async {
-    try {
-      setState(() {
-        isLoading = true;
-        errorMessage = null;
-      });
-
-      final loadedLicenses = await LicenseService.loadFromLicenseRegistry();
-
-      setState(() {
-        licenses = loadedLicenses;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        errorMessage = e.toString();
-        isLoading = false;
-      });
-    }
-  }
+  const LicenseScreen({
+    super.key,
+    required this.licenses,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -488,143 +429,77 @@ class _LicenseScreenState extends State<LicenseScreen> {
         foregroundColor: Colors.black87,
         elevation: 0.5,
       ),
-      body: _buildBody(),
-    );
-  }
-
-  Widget _buildBody() {
-    if (isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'Loading licenses...',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red.shade400,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Error loading licenses',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.red.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 8),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadLicenses,
-              child: Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (licenses.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.description_outlined,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'No licenses found',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      children: [
-        // 헤더 정보
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(16),
-          color: Colors.blue.shade50,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.flutter_dash,
-                    color: Colors.blue.shade600,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'LicenseRegistry Method',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+      body: Column(
+        children: [
+          // 헤더 정보
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16),
+            color: Colors.blue.shade50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.flutter_dash,
+                      color: Colors.blue.shade600,
+                      size: 20,
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Text(
-                '${licenses.length} packages (Built-in Flutter registry)',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                    SizedBox(width: 8),
+                    Text(
+                      'LicenseRegistry Method',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                SizedBox(height: 8),
+                Text(
+                  '${licenses.length} packages (Built-in Flutter registry)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        // 라이선스 리스트
-        Expanded(
-          child: ListView.builder(
-            itemCount: licenses.length,
-            itemBuilder: (context, index) {
-              return LicenseCard(license: licenses[index]);
-            },
+          // 라이선스 리스트
+          Expanded(
+            child: licenses.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'No licenses found',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: licenses.length,
+                    itemBuilder: (context, index) {
+                      return LicenseCard(license: licenses[index]);
+                    },
+                  ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -807,34 +682,33 @@ class _LicenseCardState extends State<LicenseCard> {
 ```
 ## example/test/widget_test.dart
 ```dart
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
+import 'package:example/main.dart';
+import 'package:flutter_license_manager/flutter_license_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:example/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('License Manager Example app test', (WidgetTester tester) async {
+    // Mock license data for testing
+    final mockLicenses = [
+      OssLicenseInfo(
+        packageName: 'test_package',
+        licenseText: 'Test license text',
+        licenseCount: 1,
+      ),
+    ];
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Build our app and trigger a frame with mock data
+    await tester.pumpWidget(MyApp(
+      basicLicenses: mockLicenses,
+      allLicenses: mockLicenses,
+    ));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify that the home screen title is displayed
+    expect(find.text('Choose License View Method'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that both buttons are present
+    expect(find.text('Basic LicenseRegistry'), findsOneWidget);
+    expect(find.text('With Custom Licenses'), findsOneWidget);
   });
 }
 
@@ -1001,54 +875,6 @@ class LicenseService {
     buffer.write(licenseText);
 
     return buffer.toString();
-  }
-
-  /// 사전 정의된 일반적인 커스텀 라이선스들
-  static List<OssLicenseInfo> getCommonCustomLicenses() {
-    return [
-      // Go 언어 관련
-      createCustomLicense(
-        packageName: 'Go Runtime',
-        licenseText: '''Copyright (c) 2009 The Go Authors. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-   * Redistributions of source code must retain the above copyright
-     notice, this list of conditions and the following disclaimer.
-   * Redistributions in binary form must reproduce the above
-     copyright notice, this list of conditions and the following
-     disclaimer in the documentation and/or other materials provided
-     with the distribution.
-   * Neither the name of Google Inc. nor the names of its
-     contributors may be used to endorse or promote products derived
-     from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.''',
-      ),
-
-      // Windows 관련 (예시)
-      createCustomLicense(
-        packageName: 'Microsoft Visual C++ Redistributable',
-        licenseText: '''MICROSOFT SOFTWARE LICENSE TERMS
-MICROSOFT VISUAL C++ REDISTRIBUTABLE
-
-These license terms are an agreement between you and Microsoft Corporation (or one of its affiliates). They apply to the software named above and any Microsoft services or software updates (except to the extent such services or updates are accompanied by new or additional terms, in which case those different terms apply prospectively and do not alter your or Microsoft's rights relating to pre-updated software or services).
-
-[Note: This is a simplified example. Please use actual Microsoft license text for real applications]''',
-      ),
-    ];
   }
 
   /// 같은 패키지명을 가진 라이선스들을 통합

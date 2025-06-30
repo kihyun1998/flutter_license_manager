@@ -1,20 +1,15 @@
 import 'package:example/screens/custom_license_screen.dart';
 import 'package:example/screens/license_screen.dart';
+import 'package:example/services/license_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_license_manager/flutter_license_manager.dart';
 
 class HomeScreen extends StatelessWidget {
-  final List<OssLicenseInfo> basicLicenses;
-  final List<OssLicenseInfo> allLicenses;
-
-  const HomeScreen({
-    super.key,
-    required this.basicLicenses,
-    required this.allLicenses,
-  });
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final licenseManager = LicenseManager();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('License Manager Example'),
@@ -57,15 +52,14 @@ class HomeScreen extends StatelessWidget {
               context,
               title: 'Basic LicenseRegistry',
               subtitle:
-                  'Flutter built-in license registry only (${basicLicenses.length} packages)',
+                  'Flutter built-in license registry only (${licenseManager.basicLicenses.length} packages)',
               icon: Icons.flutter_dash,
               color: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        LicenseScreen(licenses: basicLicenses),
+                    builder: (context) => LicenseScreen(),
                   ),
                 );
               },
@@ -75,15 +69,14 @@ class HomeScreen extends StatelessWidget {
               context,
               title: 'With Custom Licenses',
               subtitle:
-                  'LicenseRegistry + Custom licenses (${allLicenses.length} packages)',
+                  'LicenseRegistry + Custom licenses (${licenseManager.allLicenses.length} packages)',
               icon: Icons.library_books,
               color: Colors.green,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        CustomLicenseScreen(licenses: allLicenses),
+                    builder: (context) => CustomLicenseScreen(),
                   ),
                 );
               },
