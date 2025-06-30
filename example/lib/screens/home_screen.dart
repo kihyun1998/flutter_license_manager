@@ -1,6 +1,5 @@
-import 'package:example/screens/custom_license_screen.dart';
-import 'package:example/screens/license_screen.dart';
 import 'package:example/services/license_manager.dart';
+import 'package:example/widgets/license_dialog.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -56,11 +55,10 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.flutter_dash,
               color: Colors.blue,
               onTap: () {
-                Navigator.push(
+                LicenseDialog.show(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => LicenseScreen(),
-                  ),
+                  licenses: licenseManager.basicLicenses,
+                  title: 'Basic LicenseRegistry',
                 );
               },
             ),
@@ -73,11 +71,10 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.library_books,
               color: Colors.green,
               onTap: () {
-                Navigator.push(
+                LicenseDialog.show(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => CustomLicenseScreen(),
-                  ),
+                  licenses: licenseManager.allLicenses,
+                  title: 'With Custom Licenses',
                 );
               },
             ),
