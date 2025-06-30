@@ -9,16 +9,20 @@ class LicenseParser {
       final text = paragraph.text;
       final indent = paragraph.indent;
 
+      // \r 문자 처리: \r\n -> \n, 남은 \r -> \n
+      final normalizedText =
+          text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+
       // indent 값만큼 공백(스페이스) 추가
       final indentSpaces = ' ' * (indent * 2); // indent 1당 스페이스 2개
 
-      if (text.isEmpty) {
+      if (normalizedText.isEmpty) {
         // 빈 텍스트는 그대로 빈 줄 추가
         buffer.writeln();
       } else {
         // 들여쓰기 적용된 텍스트 추가
         // 여러 줄인 경우 각 줄마다 들여쓰기 적용
-        final lines = text.split('\n');
+        final lines = normalizedText.split('\n');
         for (int i = 0; i < lines.length; i++) {
           final line = lines[i];
           if (line.trim().isEmpty) {
