@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.0
+
+### BREAKING CHANGES
+- Removed `packageNames`, `isMultiplePackages`, and `packageCount` getters from `OssLicenseInfo`. Each record represents exactly one package — the loader already explodes multi-package registry entries into separate records — so these comma-splitting getters described states the package never produced. Use `packageName` directly.
+
+### Migration
+- `license.packageNames` → `[license.packageName]`
+- `license.isMultiplePackages` → always `false` (remove the branch)
+- `license.packageCount` → always `1`
+
 ## 2.0.1
 
 ### Fixed

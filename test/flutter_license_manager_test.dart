@@ -1,5 +1,81 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_license_manager/flutter_license_manager.dart';
 
 void main() {
-  test('adds one to input values', () {});
+  // LicenseRegistry is process-global; reset before each test so the
+  // registry-backed cases start from a known-empty state.
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(LicenseRegistry.reset);
+
+  group('OssLicenseInfo', () {
+    test('licenseCount defaults to the number of license texts', () {
+      final info = OssLicenseInfo(packageName: 'foo', licenseTexts: ['a', 'b']);
+      expect(info.licenseCount, 2);
+      expect(info.hasMultipleLicenses, isTrue);
+    });
+
+    test('a single license text is not "multiple"', () {
+      final info = OssLicenseInfo(packageName: 'foo', licenseTexts: ['only']);
+      expect(info.licenseCount, 1);
+      expect(info.hasMultipleLicenses, isFalse);
+    });
+
+    test('packageName is one opaque identity — commas carry no meaning', () {
+      final info =
+          OssLicenseInfo(packageName: 'Foo, Bar', licenseTexts: ['t']);
+      expect(info.packageName, 'Foo, Bar');
+    });
+  });
+
+  group('LicenseService.createCustomLicense', () {
+    test('produces a single-package record', () {
+      final info = LicenseService.createCustomLicense(
+        packageName: 'My Pkg',
+        licenseText: 'MIT',
+      );
+      expect(info.packageName, 'My Pkg');
+      expect(info.licenseTexts, ['MIT']);
+      expect(info.licenseCount, 1);
+    });
+  });
+
+  group('LicenseService.loadFromLicenseRegistry', () {
+    test('explodes a multi-package registry entry into one record per package',
+        () async {
+      LicenseRegistry.addLicense(() async* {
+        yield const LicenseEntryWithLineBreaks(
+          ['pkg_a', 'pkg_b'],
+          'shared license text',
+        );
+      });
+
+      final licenses = await LicenseService.loadFromLicenseRegistry();
+      final names = licenses.map((l) => l.packageName).toList();
+
+      expect(names, containsAll(<String>['pkg_a', 'pkg_b']));
+      final a = licenses.firstWhere((l) => l.packageName == 'pkg_a');
+      expect(a.licenseTexts.single, contains('shared license text'));
+      expect(a.hasMultipleLicenses, isFalse);
+    });
+
+    test('consolidates same-name records case-insensitively, then sorts',
+        () async {
+      final licenses = await LicenseService.loadFromLicenseRegistry(
+        customLicenses: [
+          OssLicenseInfo(packageName: 'Zed', licenseTexts: ['z']),
+          OssLicenseInfo(packageName: 'alpha', licenseTexts: ['a1']),
+          OssLicenseInfo(packageName: 'Alpha', licenseTexts: ['a2']),
+        ],
+      );
+
+      // 'alpha' and 'Alpha' merge into one record (first occurrence's casing),
+      // sorted case-insensitively before 'Zed'.
+      expect(licenses.map((l) => l.packageName).toList(), ['alpha', 'Zed']);
+
+      final alpha = licenses.first;
+      expect(alpha.licenseTexts, ['a1', 'a2']);
+      expect(alpha.hasMultipleLicenses, isTrue);
+    });
+  });
 }

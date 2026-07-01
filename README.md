@@ -17,7 +17,7 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_license_manager: ^2.0.1
+  flutter_license_manager: ^3.0.0
 ```
 
 Then run:
@@ -108,10 +108,7 @@ Represents license information for a package.
 - `String packageName`: Name of the package
 - `List<String> licenseTexts`: List of license texts (NEW in v2.0.0)
 - `int licenseCount`: Number of licenses (automatically calculated)
-- `List<String> packageNames`: List of package names (for multi-package licenses)
-- `bool isMultiplePackages`: Whether this contains multiple packages
 - `bool hasMultipleLicenses`: Whether this package has multiple license texts
-- `int packageCount`: Number of packages
 
 #### `LicenseService`
 
