@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Pinned so CI does not drift with the runner's default Flutter.
+env:
+  FLUTTER_VERSION: "3.41.9"
+
+jobs:
+  dart:
+    name: Dart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter --version
+
+      - name: Install dependencies (package)
+        run: flutter pub get
+
+      - name: Install dependencies (example)
+        run: flutter pub get
+        working-directory: example
+
+      # `.` covers both the package and the example.
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze (package)
+        run: flutter analyze
+
+      - name: Analyze (example)
+        run: flutter analyze
+        working-directory: example
+
+      - name: Test (package)
+        run: flutter test
+
+      - name: Test (example)
+        run: flutter test
+        working-directory: example
+
+      # Guards the published archive (size, .pubignore, layout) from regressing.
+      - name: Publish dry-run
+        run: flutter pub publish --dry-run

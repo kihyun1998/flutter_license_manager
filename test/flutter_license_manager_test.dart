@@ -22,8 +22,7 @@ void main() {
     });
 
     test('packageName is one opaque identity — commas carry no meaning', () {
-      final info =
-          OssLicenseInfo(packageName: 'Foo, Bar', licenseTexts: ['t']);
+      final info = OssLicenseInfo(packageName: 'Foo, Bar', licenseTexts: ['t']);
       expect(info.packageName, 'Foo, Bar');
     });
 

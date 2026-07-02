@@ -25,8 +25,10 @@ void main() {
     });
 
     final custom = [
-      LicenseService.createCustomLicense(packageName: 'Custom A', licenseText: 'A'),
-      LicenseService.createCustomLicense(packageName: 'Custom B', licenseText: 'B'),
+      LicenseService.createCustomLicense(
+          packageName: 'Custom A', licenseText: 'A'),
+      LicenseService.createCustomLicense(
+          packageName: 'Custom B', licenseText: 'B'),
     ];
 
     final licenses = await loadAppLicenses(customLicenses: custom);
