@@ -4,6 +4,7 @@
 
 ### BREAKING CHANGES
 - Removed `packageNames`, `isMultiplePackages`, and `packageCount` getters from `OssLicenseInfo`. Each record represents exactly one package — the loader already explodes multi-package registry entries into separate records — so these comma-splitting getters described states the package never produced. Use `packageName` directly.
+- `OssLicenseInfo.licenseCount` is now a derived getter, and the optional `licenseCount` constructor parameter was removed. It was always `licenseTexts.length`; the parameter only allowed it to desync. Construct with `packageName` and `licenseTexts` only.
 
 ### Changed
 - Consolidation now removes exact-duplicate license texts within a package: verbatim repeats are collapsed while distinct texts are preserved in order. `licenseCount` and `hasMultipleLicenses` reflect the deduplicated set.
