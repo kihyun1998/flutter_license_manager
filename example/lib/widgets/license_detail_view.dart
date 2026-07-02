@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_license_manager/flutter_license_manager.dart';
 
+/// Builds the plain-text block copied to the clipboard for a license:
+/// the package name followed by its license texts, blank-line separated.
+String buildCopyText(OssLicenseInfo license) {
+  return 'Package: ${license.packageName}\n\n'
+      '${license.licenseTexts.join('\n\n')}';
+}
+
 class LicenseDetailView extends StatelessWidget {
   final OssLicenseInfo license;
   final VoidCallback onBack;
@@ -118,8 +125,6 @@ class LicenseDetailView extends StatelessWidget {
   }
 
   void _copyLicenseText() {
-    final textToCopy =
-        'Package: ${license.packageName}\n\n${license.licenseTexts.join('\n\n')}';
-    Clipboard.setData(ClipboardData(text: textToCopy));
+    Clipboard.setData(ClipboardData(text: buildCopyText(license)));
   }
 }
