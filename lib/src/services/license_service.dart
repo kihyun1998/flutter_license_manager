@@ -98,10 +98,15 @@ class LicenseService {
     // 원본 패키지명 사용 (첫 번째 것)
     final packageName = licenses.first.packageName;
 
-    // 모든 라이센스 텍스트를 리스트로 합치기
+    // 모든 라이센스 텍스트를 합치되, 완전히 동일한 텍스트는 제거 (등장 순서 유지)
     final allLicenseTexts = <String>[];
+    final seen = <String>{};
     for (final license in licenses) {
-      allLicenseTexts.addAll(license.licenseTexts);
+      for (final text in license.licenseTexts) {
+        if (seen.add(text)) {
+          allLicenseTexts.add(text);
+        }
+      }
     }
 
     return OssLicenseInfo(

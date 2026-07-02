@@ -77,5 +77,32 @@ void main() {
       expect(alpha.licenseTexts, ['a1', 'a2']);
       expect(alpha.hasMultipleLicenses, isTrue);
     });
+
+    test('drops identical license texts when merging a package', () async {
+      final licenses = await LicenseService.loadFromLicenseRegistry(
+        customLicenses: [
+          OssLicenseInfo(packageName: 'dup', licenseTexts: ['SAME']),
+          OssLicenseInfo(packageName: 'dup', licenseTexts: ['SAME']),
+        ],
+      );
+
+      final record = licenses.singleWhere((l) => l.packageName == 'dup');
+      expect(record.licenseTexts, ['SAME']);
+      expect(record.hasMultipleLicenses, isFalse);
+    });
+
+    test('preserves distinct license texts, in order, when merging', () async {
+      final licenses = await LicenseService.loadFromLicenseRegistry(
+        customLicenses: [
+          OssLicenseInfo(packageName: 'multi', licenseTexts: ['A']),
+          OssLicenseInfo(packageName: 'multi', licenseTexts: ['B']),
+          OssLicenseInfo(packageName: 'multi', licenseTexts: ['A']),
+        ],
+      );
+
+      final record = licenses.singleWhere((l) => l.packageName == 'multi');
+      expect(record.licenseTexts, ['A', 'B']);
+      expect(record.licenseCount, 2);
+    });
   });
 }
