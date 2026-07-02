@@ -1,14 +1,14 @@
-import 'package:example/services/license_manager.dart';
+import 'package:example/app_licenses.dart';
 import 'package:example/widgets/license_dialog.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final AppLicenses licenses;
+
+  const HomeScreen({super.key, required this.licenses});
 
   @override
   Widget build(BuildContext context) {
-    final licenseManager = LicenseManager();
-
     return Scaffold(
       appBar: AppBar(
         title: Text('License Manager Example'),
@@ -51,13 +51,13 @@ class HomeScreen extends StatelessWidget {
               context,
               title: 'Basic LicenseRegistry',
               subtitle:
-                  'Flutter built-in license registry only (${licenseManager.basicLicenses.length} packages)',
+                  'Flutter built-in license registry only (${licenses.basic.length} packages)',
               icon: Icons.flutter_dash,
               color: Colors.blue,
               onTap: () {
                 LicenseDialog.show(
                   context,
-                  licenses: licenseManager.basicLicenses,
+                  licenses: licenses.basic,
                   title: 'Basic LicenseRegistry',
                 );
               },
@@ -67,13 +67,13 @@ class HomeScreen extends StatelessWidget {
               context,
               title: 'With Custom Licenses',
               subtitle:
-                  'LicenseRegistry + Custom licenses (${licenseManager.allLicenses.length} packages)',
+                  'LicenseRegistry + Custom licenses (${licenses.all.length} packages)',
               icon: Icons.library_books,
               color: Colors.green,
               onTap: () {
                 LicenseDialog.show(
                   context,
-                  licenses: licenseManager.allLicenses,
+                  licenses: licenses.all,
                   title: 'With Custom Licenses',
                 );
               },
