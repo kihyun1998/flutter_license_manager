@@ -16,69 +16,78 @@ class HomeScreen extends StatelessWidget {
         foregroundColor: Colors.black87,
         elevation: 0.5,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Icon(
-              Icons.description_outlined,
-              size: 80,
-              color: Colors.blue.shade400,
-            ),
-            SizedBox(height: 32),
-            Text(
-              'Choose License View Method',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+      body: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Icon(
+                      Icons.description_outlined,
+                      size: 80,
+                      color: Colors.blue.shade400,
+                    ),
+                    SizedBox(height: 32),
+                    Text(
+                      'Choose License View Method',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Compare different ways to display open source licenses',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    SizedBox(height: 48),
+                    _buildMethodButton(
+                      context,
+                      title: 'Basic LicenseRegistry',
+                      subtitle:
+                          'Flutter built-in license registry only (${licenses.basic.length} packages)',
+                      icon: Icons.flutter_dash,
+                      color: Colors.blue,
+                      onTap: () {
+                        LicenseDialog.show(
+                          context,
+                          licenses: licenses.basic,
+                          title: 'Basic LicenseRegistry',
+                        );
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    _buildMethodButton(
+                      context,
+                      title: 'With Custom Licenses',
+                      subtitle:
+                          'LicenseRegistry + Custom licenses (${licenses.all.length} packages)',
+                      icon: Icons.library_books,
+                      color: Colors.green,
+                      onTap: () {
+                        LicenseDialog.show(
+                          context,
+                          licenses: licenses.all,
+                          title: 'With Custom Licenses',
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: 16),
-            Text(
-              'Compare different ways to display open source licenses',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            SizedBox(height: 48),
-            _buildMethodButton(
-              context,
-              title: 'Basic LicenseRegistry',
-              subtitle:
-                  'Flutter built-in license registry only (${licenses.basic.length} packages)',
-              icon: Icons.flutter_dash,
-              color: Colors.blue,
-              onTap: () {
-                LicenseDialog.show(
-                  context,
-                  licenses: licenses.basic,
-                  title: 'Basic LicenseRegistry',
-                );
-              },
-            ),
-            SizedBox(height: 16),
-            _buildMethodButton(
-              context,
-              title: 'With Custom Licenses',
-              subtitle:
-                  'LicenseRegistry + Custom licenses (${licenses.all.length} packages)',
-              icon: Icons.library_books,
-              color: Colors.green,
-              onTap: () {
-                LicenseDialog.show(
-                  context,
-                  licenses: licenses.all,
-                  title: 'With Custom Licenses',
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
