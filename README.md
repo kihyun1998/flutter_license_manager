@@ -125,7 +125,7 @@ Loads all licenses from Flutter's LicenseRegistry and optionally adds custom lic
 **Returns:** `Future<List<OssLicenseInfo>>`
 
 ##### `createCustomLicense({required String packageName, required String licenseText})`
-Creates a custom license object.
+Creates a custom license record. This is the intended way to construct an `OssLicenseInfo` for dependencies outside Flutter's registry (DLLs, native libraries, etc.).
 
 **Parameters:**
 - `packageName`: Name of the package
