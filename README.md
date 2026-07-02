@@ -133,6 +133,30 @@ Creates a custom license record. This is the intended way to construct an `OssLi
 
 **Returns:** `OssLicenseInfo`
 
+## 🔄 Migration from v2.x to v3.x
+
+### Breaking Changes
+
+`OssLicenseInfo` no longer exposes the comma-splitting package getters. Every record already represents exactly one package, so these described states that never occurred:
+
+```dart
+// v2.x — removed in v3.x
+license.packageNames        // List<String>
+license.isMultiplePackages  // bool
+license.packageCount        // int
+
+// v3.x — use packageName directly
+[license.packageName]       // was packageNames
+false                       // was isMultiplePackages (always one package)
+1                           // was packageCount
+```
+
+`packageName`, `licenseTexts`, `licenseCount`, and `hasMultipleLicenses` are unchanged.
+
+### Also new
+
+License consolidation now collapses exact-duplicate license texts within a package (verbatim repeats), while preserving genuinely distinct texts in order.
+
 ## 🔄 Migration from v1.x to v2.x
 
 ### Breaking Changes

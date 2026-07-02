@@ -1,3 +1,17 @@
+# NOTE: a .pubignore overrides the root .gitignore for publishing, so the
+# usual build/tooling exclusions must be repeated here.
+
+# Dead codebase-dump tooling (not shipped)
 codemd-windows-amd64.exe
 CODE.md
 .codeignore
+
+# Build & tooling artifacts
+build/
+.dart_tool/
+coverage/
+pubspec.lock
+
+# Repo/agent tooling — not needed by package consumers
+docs/
+.claude/
