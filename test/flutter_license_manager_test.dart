@@ -26,6 +26,14 @@ void main() {
           OssLicenseInfo(packageName: 'Foo, Bar', licenseTexts: ['t']);
       expect(info.packageName, 'Foo, Bar');
     });
+
+    test('toString names the package and the license count', () {
+      final info = OssLicenseInfo(packageName: 'foo', licenseTexts: ['a', 'b']);
+      expect(
+        info.toString(),
+        'OssLicenseInfo(packageName: foo, licenseCount: 2)',
+      );
+    });
   });
 
   group('LicenseService.createCustomLicense', () {
@@ -103,6 +111,17 @@ void main() {
       final record = licenses.singleWhere((l) => l.packageName == 'multi');
       expect(record.licenseTexts, ['A', 'B']);
       expect(record.licenseCount, 2);
+    });
+
+    test('rethrows when a license collector fails', () async {
+      LicenseRegistry.addLicense(() async* {
+        throw StateError('collector boom');
+      });
+
+      await expectLater(
+        LicenseService.loadFromLicenseRegistry(),
+        throwsA(isA<StateError>()),
+      );
     });
   });
 }
