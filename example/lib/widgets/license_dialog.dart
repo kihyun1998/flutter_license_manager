@@ -1,3 +1,4 @@
+import 'package:example/license_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_license_manager/flutter_license_manager.dart';
 
@@ -140,11 +141,7 @@ class _LicenseDialogState extends State<LicenseDialog> {
                         license.packageName,
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      subtitle: Text(
-                        license.licenseCount == 1
-                            ? '1 license'
-                            : '${license.licenseCount} licenses',
-                      ),
+                      subtitle: Text(licenseCountLabel(license.licenseCount)),
                       trailing: Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () {
                         setState(() {

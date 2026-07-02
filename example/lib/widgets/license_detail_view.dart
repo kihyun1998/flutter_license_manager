@@ -1,3 +1,4 @@
+import 'package:example/license_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_license_manager/flutter_license_manager.dart';
@@ -43,7 +44,7 @@ class LicenseDetailView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    _getLicenseCountText(),
+                    licenseCountLabel(license.licenseCount),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
@@ -114,14 +115,6 @@ class LicenseDetailView extends StatelessWidget {
     }
 
     return widgets;
-  }
-
-  String _getLicenseCountText() {
-    if (license.licenseCount == 1) {
-      return '1 license';
-    } else {
-      return '${license.licenseCount} licenses';
-    }
   }
 
   void _copyLicenseText() {
