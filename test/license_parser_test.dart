@@ -54,4 +54,53 @@ void main() {
       expect(LicenseParser.formatLicenseParagraphs(const []), '');
     });
   });
+
+  group('LicenseParser.formatLicenseParagraphs — centeredIndent', () {
+    const centered = LicenseParagraph.centeredIndent;
+
+    test('centers against the longest line of the entry', () {
+      final out = LicenseParser.formatLicenseParagraphs(
+        const [
+          LicenseParagraph('ABCDEFGHIJ', 0),
+          LicenseParagraph('MIT', centered)
+        ],
+      );
+      expect(out, 'ABCDEFGHIJ\n   MIT'); // (10 - 3) ~/ 2 = 3
+    });
+
+    test('counts indentation toward the longest line', () {
+      final out = LicenseParser.formatLicenseParagraphs(
+        const [LicenseParagraph('abcd', 1), LicenseParagraph('xx', centered)],
+      );
+      expect(out, '  abcd\n  xx'); // longest is '  abcd' (6)
+    });
+
+    test('a centered line that is the longest gets no padding', () {
+      final out = LicenseParser.formatLicenseParagraphs(
+        const [
+          LicenseParagraph('LONG CENTERED TITLE', centered),
+          LicenseParagraph('short', 0),
+        ],
+      );
+      expect(out, 'LONG CENTERED TITLE\nshort');
+    });
+
+    test('centers each line of a multi-line centered paragraph', () {
+      final out = LicenseParser.formatLicenseParagraphs(
+        const [LicenseParagraph('abcdef\nab', centered)],
+      );
+      expect(out, 'abcdef\n  ab');
+    });
+
+    test('an empty centered paragraph is a blank line', () {
+      final out = LicenseParser.formatLicenseParagraphs(
+        const [
+          LicenseParagraph('abcd', 0),
+          LicenseParagraph('', centered),
+          LicenseParagraph('ab', centered),
+        ],
+      );
+      expect(out, 'abcd\n\n ab');
+    });
+  });
 }

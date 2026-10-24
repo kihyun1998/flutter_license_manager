@@ -27,4 +27,4 @@ The one GitHub Actions workflow that checks every push to `main` and every pull 
 
 ## Known holes / open
 - **Dependabot is not set up.** Issue #9 specifies it: root pub monthly with `increase-if-necessary`, one PR per dependency; actions monthly, grouped. Tracked: #9.
-- Issue #9 disagrees with itself about `example/`: *Implementation Decisions* says example PRs are grouped, and *Further Notes* says `example/` is left out. Settle it before writing the config.
+- `example/` stays out of the Dependabot config. Issue #9 says both "grouped" and "left out"; the maintainer chose left out, since it ships nothing and depends only on `cupertino_icons` and `flutter_lints` (maintainer, 2026-10-24).

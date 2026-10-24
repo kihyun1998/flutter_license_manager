@@ -14,7 +14,7 @@ reads hand-written notes as leads and keeps their paths.
 
 ## The repo in one paragraph
 
-A Flutter package with one entry point, `LicenseService.loadFromLicenseRegistry`. It reads Flutter's `LicenseRegistry`, formats each entry's paragraphs, explodes multi-package entries into one `OssLicenseInfo` per package, appends custom licenses, then merges same-name records, drops duplicate texts and sorts. `example/` demonstrates it; CI and a hand-run publish ship it. The largest gap: Flutter's source is binding (`docs/agents/thegraph.md`), and the formatter already diverges from it on centered paragraphs — see [paragraph-formatting](territory/paragraph-formatting.md).
+A Flutter package with one entry point, `LicenseService.loadFromLicenseRegistry`. It reads Flutter's `LicenseRegistry`, formats each entry's paragraphs, explodes multi-package entries into one `OssLicenseInfo` per package, appends custom licenses, then merges same-name records, drops duplicate texts and sorts. `example/` demonstrates it; CI and a hand-run publish ship it. The largest gap: custom license texts skip formatting, and whether they should is undecided — see [custom-licenses](territory/custom-licenses.md).
 
 ## Territories
 
