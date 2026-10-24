@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # Root package. No committed lockfile, so increase-if-necessary opens a PR
+  # only when a release falls outside the current constraint. Not grouped:
+  # each PR is one constraint decision for consumers.
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    versioning-strategy: increase-if-necessary
+    labels:
+      - "needs-triage"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns:
+          - "*"
+    labels:
+      - "needs-triage"
