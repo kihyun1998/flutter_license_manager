@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Centered license paragraphs (`LicenseParagraph.centeredIndent`) are now centered against the longest line of their license. They were rendered flush left.
+
 ## 3.0.0
 
 ### BREAKING CHANGES
