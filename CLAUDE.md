@@ -2,17 +2,10 @@
 
 ## Agent skills
 
-### Issue tracker
-
-Issues and specs live as GitHub issues on `kihyun1998/flutter_license_manager`, via the `gh` CLI. External PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Five canonical triage roles, each mapped to its identically-named GitHub label. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context layout: one `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+| When you | Read first |
+|---|---|
+| read, file, label or close an issue | `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md` |
+| name a domain concept, or work in an area a decision covers | `docs/agents/domain.md` |
 
 ## Comments
 
