@@ -9,3 +9,7 @@ A Flutter package that loads OSS licenses from Flutter's `LicenseRegistry`, merg
 | Source | Informs | Reached by | Binding |
 |---|---|---|---|
 | Flutter framework: `packages/flutter/lib/src/foundation/licenses.dart` (`LicenseRegistry`, `LicenseEntry`) | how it works | its source tree (raw) | binding |
+
+## Release
+
+pub-ready
